@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f4f9; }
+        h1, h2 { color: #333; }
+        .card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        input, button, textarea { padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; width: 100%; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #0056b3; }
+        pre { background: #eee; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .endpoint-label { font-size: 0.8em; color: #666; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>🎓 Student Portal</h1>
+    <p>Test the Express.js Middleware & Routing</p>
+
+    <!-- SECTION 1: GET ALL STUDENTS -->
+    <div class="card">
+        <span class="endpoint-label">GET /api/students</span>
+        <h2>View Students</h2>
+        <button onclick="fetchStudents()">Load Student List</button>
+        <pre id="studentList">No data loaded.</pre>
+    </div>
+
+    <!-- SECTION 2: JSON SUBMISSION -->
+    <div class="card">
+        <span class="endpoint-label">POST /api/students (express.json)</span>
+        <h2>Add Student (JSON)</h2>
+        <input type="text" id="jsonName" placeholder="Student Name">
+        <input type="text" id="jsonMajor" placeholder="Major">
+        <button onclick="addStudentJson()">Send JSON Data</button>
+        <p id="jsonResult"></p>
+    </div>
+
+    <!-- SECTION 3: FORM SUBMISSION -->
+    <div class="card">
+        <span class="endpoint-label">POST /api/students/form (express.urlencoded)</span>
+        <h2>Add Student (HTML Form)</h2>
+        <!-- Standard HTML Form submission -->
+        <form action="/api/students/form" method="POST">
+            <input type="text" name="name" placeholder="Student Name" required>
+            <input type="text" name="major" placeholder="Major" required>
+            <button type="submit">Submit Form</button>
+        </form>
+    </div>
+
+    <!-- SECTION 4: TEXT SUBMISSION -->
+    <div class="card">
+        <span class="endpoint-label">POST /api/students/feedback (express.text)</span>
+        <h2>Submit Feedback (Plain Text)</h2>
+        <textarea id="feedbackText" rows="3" placeholder="Type your feedback here..."></textarea>
+        <button onclick="sendFeedback()">Send Text</button>
+        <p id="feedbackResult"></p>
+    </div>
+
+    <!-- SECTION 5: RAW UPLOAD -->
+    <div class="card">
+        <span class="endpoint-label">POST /api/students/upload (express.raw)</span>
+        <h2>Upload Raw Data</h2>
+        <input type="text" id="rawData" placeholder="Enter some text to convert to raw buffer">
+        <button onclick="uploadRaw()">Upload as Octet-Stream</button>
+        <p id="uploadResult"></p>
+    </div>
+
+    <script>
+        // 1. Fetch Students
+        async function fetchStudents() {
+            const res = await fetch('/api/students');
+            const data = await res.json();
+            document.getElementById('studentList').textContent = JSON.stringify(data, null, 2);
+        }
+
+        // 2. Send JSON
+        async function addStudentJson() {
+            const name = document.getElementById('jsonName').value;
+            const major = document.getElementById('jsonMajor').value;
+            
+            const res = await fetch('/api/students', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, major })
+            });
+            const data = await res.json();
+            document.getElementById('jsonResult').textContent = data.message || "Error";
+            fetchStudents(); // Refresh list
+        }
+
+        // 4. Send Plain Text
+        async function sendFeedback() {
+            const text = document.getElementById('feedbackText').value;
+            
+            const res = await fetch('/api/students/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: text
+            });
+            const result = await res.text();
+            document.getElementById('feedbackResult').textContent = result;
+        }
+
+        // 5. Send Raw Data
+        async function uploadRaw() {
+            const text = document.getElementById('rawData').value;
+            // Convert text to blob/buffer for simulation
+            const blob = new Blob([text], { type: 'application/octet-stream' });
+            
+            const res = await fetch('/api/students/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/octet-stream' },
+                body: blob
+            });
+            const result = await res.text();
+            document.getElementById('uploadResult').textContent = result;
+        }
+    </script>
+</body>
+</html>
